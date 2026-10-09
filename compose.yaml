@@ -1,0 +1,27 @@
+services:
+  talent-engine:
+    build: .
+    init: true
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_PATH: /data/talent_engine.sqlite3
+      SEED_SAMPLE_DATA: ${SEED_SAMPLE_DATA:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "${PORT:-8000}:8000"
+    volumes:
+      - talent_engine_data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/readyz', timeout=2)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 8s
+
+volumes:
+  talent_engine_data:

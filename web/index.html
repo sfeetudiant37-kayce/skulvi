@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#01010c">
+  <meta name="description" content="Talent Engine — espace de gestion et de qualification des candidatures HCP.">
+  <title>Candidatures — SKULLVI HCP</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/mark.svg">
+  <link rel="stylesheet" href="/assets/styles.css?v=20261007-editfix-2">
+  <script src="/assets/app.js?v=20261007-editfix-2" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Aller au contenu</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navigation principale">
+      <a class="brand" href="/" aria-label="SKULLVI Talent Engine, accueil">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span class="brand-copy"><strong>SKULLVI</strong><small>HUMAN CAPITAL PROGRAM</small></span>
+      </a>
+
+      <div class="workspace-label">RECRUTEMENT</div>
+      <nav class="primary-nav">
+        <a class="nav-item active" href="#pipeline" aria-current="page" aria-label="Pipeline des candidatures">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4" width="7" height="6.5" rx="1.2"/><rect x="13.5" y="4" width="7" height="6.5" rx="1.2"/><rect x="3.5" y="13.5" width="7" height="6.5" rx="1.2"/><rect x="13.5" y="13.5" width="7" height="6.5" rx="1.2"/></svg>
+          <span>Pipeline</span><span class="nav-count" id="navCount">—</span>
+        </a>
+        <a class="nav-item" href="#method" id="methodNav" aria-label="Critères d’évaluation">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3.5 2"/></svg>
+          <span>Critères d’évaluation</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+      <section class="sidebar-status" aria-label="État du service">
+        <div class="status-heading"><span class="status-light" id="apiLight"></span><span id="apiStatus">Connexion au service…</span></div>
+        <p>API locale · SQLite</p>
+      </section>
+      <div class="sidebar-footer">TALENT ENGINE <span>·</span> VERSION 1.0</div>
+    </aside>
+
+    <main class="main-content" id="main-content">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>Human Capital Program</span><span class="crumb-separator">/</span><strong>Développeurs</strong></div>
+        <div class="topbar-actions">
+          <span class="environment-pill" id="environmentPill"><span class="environment-dot"></span><span id="environmentLabel">Connexion…</span></span>
+          <a class="button button-quiet" href="/api/v1/candidates/export.csv" id="exportLink" download>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.75v10.5m0 0 4-4m-4 4-4-4M4.5 16.5v3h15v-3"/></svg>
+            <span>Exporter</span>
+          </a>
+          <button class="button button-primary" id="newCandidateButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Ajouter une candidature</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="page-intro" id="pipeline">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> TALENT ACQUISITION <span class="eyebrow-separator">/</span> HCP 2026</div>
+          <h1>Candidatures</h1>
+          <p class="page-subtitle">Un pipeline structuré pour examiner les profils avec méthode et cohérence.</p>
+        </div>
+        <div class="intro-meta"><span class="meta-label">DERNIÈRE MISE À JOUR</span><span id="lastUpdated">—</span></div>
+      </section>
+
+      <div class="alert" id="globalAlert" role="alert" hidden></div>
+      <div class="sample-notice" id="sampleNotice" hidden><span class="notice-icon">i</span><span>La base a été initialisée avec des profils fictifs. Cet environnement ne doit pas contenir de vraies candidatures.</span><button type="button" id="dismissSampleNotice" aria-label="Masquer cette information">×</button></div>
+
+      <section class="metrics" aria-label="Résumé des candidatures">
+        <article class="metric-card">
+          <div class="metric-label">TOTAL DES DOSSIERS <span class="metric-glyph glyph-green">01</span></div>
+          <div class="metric-value" id="statTotal">—</div>
+          <div class="metric-caption">Candidatures enregistrées</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">PRIORITÉ SUGGÉRÉE <span class="metric-glyph glyph-orange">02</span></div>
+          <div class="metric-value" id="statPriority">—</div>
+          <div class="metric-caption">À examiner en premier</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">REVUE À COMPLÉTER <span class="metric-glyph glyph-blue">03</span></div>
+          <div class="metric-value" id="statPending">—</div>
+          <div class="metric-caption">Un ou plusieurs critères manquent</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">PRÉSÉLECTIONNÉS <span class="metric-glyph glyph-coral">04</span></div>
+          <div class="metric-value" id="statShortlisted">—</div>
+          <div class="metric-caption">Décision enregistrée par l’équipe</div>
+        </article>
+      </section>
+
+      <div class="workspace-grid">
+        <section class="panel pipeline-panel" aria-labelledby="listHeading">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">SUIVI DES PROFILS</div>
+              <h2 id="listHeading">Pipeline de sélection <span class="total-chip" id="filteredTotal">—</span></h2>
+            </div>
+            <button class="text-button" type="button" id="refreshButton" aria-label="Actualiser la liste">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.6-4L4 9m0-5v5h5m-5 4a8 8 0 0 0 14.6 4L20 15m0 5v-5h-5"/></svg>
+              Actualiser
+            </button>
+          </div>
+
+          <div class="filter-bar">
+            <label class="search-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 4.2 4.2"/></svg>
+              <span class="sr-only">Rechercher une candidature</span>
+              <input id="searchInput" type="search" placeholder="Nom, e-mail, compétence…" autocomplete="off">
+              <kbd>Ctrl K</kbd>
+            </label>
+            <label class="select-wrap"><span class="sr-only">Filtrer par parcours</span><select id="trackFilter"><option value="">Tous les parcours</option></select></label>
+            <label class="select-wrap"><span class="sr-only">Filtrer par statut</span><select id="statusFilter"><option value="">Tous les statuts</option></select></label>
+          </div>
+
+          <div class="table-wrap" id="tableWrap">
+            <table class="candidate-table">
+              <thead><tr>
+                <th scope="col" class="candidate-col">CANDIDAT</th>
+                <th scope="col">PARCOURS</th>
+                <th scope="col">DATE DE RÉCEPTION</th>
+                <th scope="col">INDICE</th>
+                <th scope="col">PRIORITÉ</th>
+                <th scope="col">STATUT</th>
+                <th scope="col"><span class="sr-only">Ouvrir le dossier</span></th>
+              </tr></thead>
+              <tbody id="candidateRows"></tbody>
+            </table>
+          </div>
+          <div class="loading-state" id="loadingState" aria-live="polite"><span class="spinner"></span><span>Chargement du pipeline…</span></div>
+          <div class="empty-state" id="emptyState" hidden>
+            <div class="empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/><circle cx="18" cy="16.5" r="3.5"/><path d="M18 14.8v3.4m-1.7-1.7h3.4"/></svg></div>
+            <h3>Aucun dossier ne correspond</h3>
+            <p>Modifiez les filtres ou ajoutez une nouvelle candidature au pipeline.</p>
+            <button class="button button-secondary" type="button" id="emptyAddButton">Ajouter une candidature</button>
+          </div>
+          <div class="table-footer">
+            <span id="resultsSummary">—</span>
+            <div class="pagination">
+              <button class="page-button" id="prevPage" type="button" aria-label="Page précédente" disabled>←</button>
+              <span id="pageSummary">Page 1</span>
+              <button class="page-button" id="nextPage" type="button" aria-label="Page suivante" disabled>→</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side-column" aria-label="Informations sur le pipeline">
+          <section class="panel focus-panel">
+            <div class="panel-heading compact-heading">
+              <div><div class="section-kicker">PROCHAINE ACTION</div><h2>À examiner</h2></div>
+              <span class="priority-mark" aria-hidden="true">↗</span>
+            </div>
+            <p class="panel-description">Sur cette page, scores élevés ou revues à compléter.</p>
+            <div class="priority-list" id="priorityList"></div>
+            <button class="link-button" id="viewAllButton" type="button">Voir le pipeline <span aria-hidden="true">→</span></button>
+          </section>
+
+          <section class="panel method-panel" id="method">
+            <div class="panel-heading compact-heading">
+              <div><div class="section-kicker">GRILLE D’ÉVALUATION</div><h2>Un score explicable</h2></div>
+            </div>
+            <div class="score-legend">
+              <div class="legend-row"><span class="legend-icon legend-auto">A</span><span><strong>Compétences déclarées</strong><small>Correspondance par parcours</small></span><b>40</b></div>
+              <div class="legend-row"><span class="legend-icon legend-human">H</span><span><strong>Revue humaine</strong><small>Projet, motivation, apprentissage</small></span><b>60</b></div>
+            </div>
+            <div class="method-divider"></div>
+            <div class="priority-key">
+              <div><span class="priority-dot high"></span><span>75–100</span><strong>Priorité</strong></div>
+              <div><span class="priority-dot medium"></span><span>55–74</span><strong>À examiner</strong></div>
+              <div><span class="priority-dot low"></span><span>0–54</span><strong>À compléter</strong></div>
+            </div>
+            <p class="method-footnote">Indice provisoire avant revue complète. Le score guide l’examen ; la décision reste humaine.</p>
+            <button class="link-button" type="button" id="openCriteriaButton">Voir les critères détaillés <span aria-hidden="true">→</span></button>
+          </section>
+
+          <section class="operations-note">
+            <span class="lock-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3m-4 4v3"/></svg></span>
+            <div><strong>Instance sans authentification</strong><p>Le serveur de présentation n’est pas protégé par des comptes. N’y saisissez pas de données personnelles réelles.</p></div>
+          </section>
+        </aside>
+      </div>
+
+      <footer class="main-footer"><span>Talent Engine <span class="footer-separator">·</span> Espace de qualification HCP</span><span>Score d’aide au tri · décision humaine</span></footer>
+    </main>
+  </div>
+
+  <dialog class="drawer-dialog" id="candidateDialog" aria-labelledby="candidateDialogTitle">
+    <div class="dialog-backdrop" data-close-dialog="candidate"></div>
+    <section class="drawer-content">
+      <header class="drawer-header">
+        <div><div class="section-kicker" id="candidateDialogKicker">NOUVEAU DOSSIER</div><h2 id="candidateDialogTitle">Ajouter une candidature</h2><p>Les champs marqués d’un astérisque sont requis.</p></div>
+        <button class="icon-button" type="button" data-close-dialog="candidate" aria-label="Fermer le formulaire"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </header>
+      <form id="candidateForm" class="drawer-form" novalidate>
+        <input id="editingCandidateId" type="hidden">
+        <div class="form-section">
+          <div class="form-section-heading"><span class="step-index">01</span><div><h3>Identité & parcours</h3><p>Informations nécessaires à la gestion du dossier.</p></div></div>
+          <div class="form-grid">
+            <label class="form-field"><span>Nom complet <b>*</b></span><input id="candidateName" name="name" required minlength="2" maxlength="100" placeholder="Ex. Samira Exemple" autocomplete="name"></label>
+            <label class="form-field"><span>Adresse e-mail <b>*</b></span><input id="candidateEmail" name="email" type="email" required maxlength="160" placeholder="nom@exemple.org" autocomplete="email"></label>
+            <label class="form-field"><span>Parcours visé <b>*</b></span><select id="candidateTrack" name="track" required><option value="">Sélectionner un parcours</option></select></label>
+            <label class="form-field"><span>Expérience liée <small>facultatif</small></span><span class="input-suffix"><input id="experienceYears" name="experience_years" type="number" min="0" max="40" step="1" placeholder="—"><i>ans</i></span></label>
+            <fieldset class="form-field form-field-full"><legend>Compétences déclarées <b>*</b></legend><div id="skillChoices" class="skill-grid"></div><p class="field-help">Pré-score calculé sur les compétences du parcours ; le niveau reste à vérifier.</p></fieldset>
+            <label class="form-field form-field-full"><span>Autres compétences <small>séparées par des virgules</small></span><input id="otherSkills" maxlength="300" placeholder="Ex. TypeScript, documentation technique"></label>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-heading"><span class="step-index">02</span><div><h3>Projets & motivation</h3><p>Éléments utiles à la revue qualitative du dossier.</p></div></div>
+          <div class="form-grid">
+            <label class="form-field"><span>Portfolio / GitHub <small>facultatif</small></span><input id="portfolioUrl" type="url" maxlength="300" placeholder="https://…"><span class="field-help">Lien HTTP(S) public, si disponible.</span></label>
+            <label class="form-field"><span>Projets pertinents <small>contexte, non noté</small></span><input id="projectCount" type="number" min="0" max="99" value="0"></label>
+            <label class="form-field form-field-full"><span>Projet et contribution personnelle</span><textarea id="projectSummary" maxlength="1400" rows="4" placeholder="Problème traité, rôle exact, décisions prises, résultats…"></textarea></label>
+            <label class="form-field form-field-full"><span>Motivation & objectifs d’apprentissage <b>*</b></span><textarea id="motivation" required minlength="30" maxlength="1400" rows="4" placeholder="Pourquoi ce programme ? Qu’aimeriez-vous apprendre ?"></textarea><span class="field-help">Évaluée par une personne, pas par une analyse automatique du texte.</span></label>
+            <label class="form-field"><span>Disponibilité <small>contexte, non notée</small></span><select id="availability"><option value="">À préciser</option></select></label>
+          </div>
+        </div>
+        <div class="form-error" id="formError" role="alert" hidden></div>
+        <div class="drawer-actions"><button class="button button-secondary" type="button" data-close-dialog="candidate">Annuler</button><button class="button button-primary" type="submit" id="saveCandidateButton">Enregistrer le dossier</button></div>
+      </form>
+    </section>
+  </dialog>
+
+  <dialog class="drawer-dialog detail-dialog" id="detailDialog" aria-labelledby="detailDialogTitle">
+    <div class="dialog-backdrop" data-close-dialog="detail"></div>
+    <section class="drawer-content">
+      <header class="drawer-header">
+        <div><div class="section-kicker">DOSSIER CANDIDAT</div><h2 id="detailDialogTitle">Profil</h2><p id="detailDialogSubtitle">—</p></div>
+        <button class="icon-button" type="button" data-close-dialog="detail" aria-label="Fermer le dossier"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </header>
+      <div class="detail-scroll" id="detailContent"></div>
+      <footer class="detail-footer"><button class="button button-danger-quiet" id="deleteCandidateButton" type="button">Supprimer</button><div><button class="button button-secondary" id="editCandidateButton" type="button">Modifier</button><button class="button button-primary" id="saveReviewButton" type="button">Enregistrer la revue</button></div></footer>
+    </section>
+  </dialog>
+
+  <dialog class="criteria-dialog" id="criteriaDialog" aria-labelledby="criteriaDialogTitle">
+    <div class="criteria-backdrop" data-close-criteria></div>
+    <section class="criteria-content">
+      <header class="criteria-header">
+        <div><div class="section-kicker">GRILLE D’ÉVALUATION</div><h2 id="criteriaDialogTitle">Un score lisible, une décision humaine</h2><p>Les pondérations sont des hypothèses de travail à valider avec l’équipe.</p></div>
+        <button class="icon-button" type="button" data-close-criteria aria-label="Fermer les critères"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </header>
+      <div class="criteria-body">
+        <section class="criteria-block"><div class="criteria-heading"><span class="criteria-badge green">A</span><div><h3>Compétences déclarées</h3><p>Pré-score automatique · 40 points</p></div></div><p>Chaque parcours possède quatre compétences de référence. Une correspondance déclarée ajoute 10 points. La liste est visible dans le formulaire ; le niveau n’est pas vérifié automatiquement.</p><div id="criteriaTrackList" class="criteria-track-list"></div></section>
+        <section class="criteria-block"><div class="criteria-heading"><span class="criteria-badge orange">H</span><div><h3>Revue humaine</h3><p>60 points · complétée par l’évaluateur</p></div></div><div class="criteria-rubric"><div><strong>Projet & contribution <span>/25</span></strong><p>Rôle, pertinence, choix techniques, résultat et limites. Le nombre de projets ou un lien seul ne rapportent pas de points.</p></div><div><strong>Motivation & compréhension <span>/20</span></strong><p>Objectif d’apprentissage concret et compréhension du programme.</p></div><div><strong>Apprentissage & autonomie <span>/15</span></strong><p>Initiative, démarche de résolution, feedback et progression.</p></div></div></section>
+        <section class="criteria-block priority-block"><div class="criteria-heading"><span class="criteria-badge blue">↗</span><div><h3>Indice de tri</h3><p>Repère d’attention, jamais une décision automatique.</p></div></div><div class="criteria-thresholds"><div><span class="priority-dot high"></span><strong>75–100</strong><span>Priorité suggérée</span></div><div><span class="priority-dot medium"></span><strong>55–74</strong><span>À examiner</span></div><div><span class="priority-dot low"></span><strong>0–54</strong><span>À compléter</span></div></div><p>Avant la revue complète, l’indice est le pré-score ramené sur 100. Après les trois notes humaines, il correspond au score final sur 100. Aucun dossier n’est refusé automatiquement.</p></section>
+      </div>
+      <footer class="criteria-footer"><span>Les années d’expérience, la disponibilité et la quantité de projets sont conservées comme contexte, sans points.</span><button class="button button-secondary" type="button" data-close-criteria>Fermer</button></footer>
+    </section>
+  </dialog>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
